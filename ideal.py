@@ -204,7 +204,7 @@ if __name__ == '__main__':
             self.assertEqual(b, {'9999': 'TBM Bank'})
 
         def test_createPayment(self):
-            r = self.c.createPayment(9999, 128, 'test payment', 'http://test.nfg.nl/ideal/return.php', 'http://test.nfg.nl/ideal/report.php')
+            r = self.c.createPayment(9999, 128, 'test payment', 'http://testsite/ideal/return', 'http://testsite/ideal/report')
             self.assert_(r)
             transaction_id = self.c.getTransactionID()
             url = self.c.getBankURL()
@@ -216,7 +216,7 @@ if __name__ == '__main__':
 
         def test_checkPayment(self):
             # prepare payment
-            r = self.c.createPayment(9999, 128, 'test payment', 'http://test.nfg.nl/ideal/return.php', 'http://test.nfg.nl/ideal/report.php')
+            r = self.c.createPayment(9999, 128, 'test payment', 'http://testsite/ideal/return', 'http://testsite/ideal/report')
             self.assert_(r)
             tid = self.c.getTransactionID()
             url = self.c.getBankURL()
