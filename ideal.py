@@ -38,9 +38,8 @@ class idealPayment:
                 )
             )
         if not xml: return None
-        et = self._parse_xml(xml)
         r = {}
-        for b in et.getiterator('bank'):
+        for b in self._parse_xml(xml).getiterator('bank'): 
             r[b.find('bank_id').text] = b.find('bank_name').text
         return r
 
@@ -57,12 +56,32 @@ class idealPayment:
         return conn.getresponse().read()
 
     def createPayment(self, bank_id, amount, description, return_url, report_url):
+        """
+        @bank_id must be a valid Bank-ID, as returned by getBanks
+
+        @amount is a number of cents (!!) to be payed.
+
+        @description of the transaction as reported in the bank records. Max-length 
+        is 30 characters (ascii).
+
+        the @return_url is the landing page redirecting the client after iDEAL
+        transaction has been completed.
+
+        the @report_url is hit by mollie to allow the application developer
+        to check and register the payment status. This url needs to be reachable
+        by mollie of course.
+
+        separating the payment checking from the @return_url page is a security 
+        mechanism, not an enforced step. This means you can make it a dummy page, 
+        or even a non-existing page. In that case, you can and should check the 
+        payment status in the @return_url page, but caveat emptor!
+
+        """
         self.setBankID(bank_id)
         self.setAmount(amount)
         self.setDescription(description)
         self.setReturnURL(return_url)
         self.setReportURL(report_url)
-
         xml = self._sendRequest('www.mollie.nl',
             '/xml/ideal/',
             urllib.urlencode(dict(
@@ -74,20 +93,15 @@ class idealPayment:
                 description=self.getDescription(),
                 returnurl=self.getReturnURL(),
                 )))
-
         if not xml: return False
-        
-        et = self._parse_xml(xml)
-        for b in et.getiterator('order'):
+        for b in self._parse_xml(xml).getiterator('order'):
             self.bank_url = b.find('URL').text
             self.transaction_id = b.find('transaction_id').text
         if self.bank_url and self.transaction_id: return True
-
         return False
 
     def checkPayment(self, transaction_id):
         self.setTransactionID(transaction_id)
-
         xml = self._sendRequest('www.mollie.nl',
             '/xml/ideal/',
             urllib.urlencode(dict(
@@ -95,16 +109,12 @@ class idealPayment:
                 partnerid=self.getPartnerID(),
                 transaction_id=self.getTransactionID(),
                 )))
-
         if not xml: return False
- 
-        et = self._parse_xml(xml)
         r = {}
-        for b in et.getiterator('order'):
+        for b in self._parse_xml(xml).getiterator('order'):
+            c =  b.find('consumer')
             self.amount = int(b.find('amount').text)
             self.payed_status = b.find('payed').text
-            consumer_info = {}
-            c =  b.find('consumer')
             self.consumer_info['name'] = c.find('consumerName').text
             self.consumer_info['account'] = c.find('consumerAccount').text
             self.consumer_info['city'] = c.find('consumerCity').text
@@ -225,3 +235,5 @@ if __name__ == '__main__':
         unittest.main()
     else:
         print "Skipping unittests. Please specify a partner ID"
+
+
