@@ -3,6 +3,10 @@
 #
 # simple iDEAL python interface to the www.mollie.nl xmlrpc webservice
 #
+# based on ideal.class.php by Mollie BV
+#
+# license: GPLv3
+#
 # copyright 2009, NFG Net Facilities Group BV, www.nfg.nl
 #
 # Paul Stevens, paul@nfg.nl
