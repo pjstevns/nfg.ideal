@@ -81,8 +81,9 @@ class idealPayment:
         for b in et.getiterator('order'):
             self.bank_url = b.find('URL').text
             self.transaction_id = b.find('transaction_id').text
+        if self.bank_url and self.transaction_id: return True
 
-        return True
+        return False
 
     def checkPayment(self, transaction_id):
         self.setTransactionID(transaction_id)
@@ -107,6 +108,9 @@ class idealPayment:
             self.consumer_info['name'] = c.find('consumerName').text
             self.consumer_info['account'] = c.find('consumerAccount').text
             self.consumer_info['city'] = c.find('consumerCity').text
+
+        if self.amount and self.payed_status: return True
+        return False
 
 ### accessors:
 
@@ -173,12 +177,12 @@ if __name__ == '__main__':
 
     import cgi, unittest
 
+    #partner_id = 999999 ## please use a valid partner ID
+
     class TestIdealPayment(unittest.TestCase):
 
-        partner_id = 269845
-
         def setUp(self):
-            self.c = idealPayment(self.partner_id)
+            self.c = idealPayment(partner_id)
             self.c.testmode = True
 
         def test_getBanks(self):
@@ -186,7 +190,8 @@ if __name__ == '__main__':
             self.assertEqual(b, {'9999': 'TBM Bank'})
 
         def test_createPayment(self):
-            self.c.createPayment(9999, 128, 'test payment', 'http://test.nfg.nl/ideal/return.php', 'http://test.nfg.nl/ideal/report.php')
+            r = self.c.createPayment(9999, 128, 'test payment', 'http://test.nfg.nl/ideal/return.php', 'http://test.nfg.nl/ideal/report.php')
+            self.assert_(r)
             transaction_id = self.c.getTransactionID()
             url = self.c.getBankURL()
             self.assert_(transaction_id)
@@ -197,7 +202,8 @@ if __name__ == '__main__':
 
         def test_checkPayment(self):
             # prepare payment
-            self.c.createPayment(9999, 128, 'test payment', 'http://test.nfg.nl/ideal/return.php', 'http://test.nfg.nl/ideal/report.php')
+            r = self.c.createPayment(9999, 128, 'test payment', 'http://test.nfg.nl/ideal/return.php', 'http://test.nfg.nl/ideal/report.php')
+            self.assert_(r)
             tid = self.c.getTransactionID()
             url = self.c.getBankURL()
 
@@ -208,9 +214,14 @@ if __name__ == '__main__':
             conn.getresponse().read()
 
             # check payment
-            d = idealPayment(self.partner_id)
+            d = idealPayment(partner_id)
             d.testmode = True
-            d.checkPayment(tid)
+            r = d.checkPayment(tid)
+            self.assert_(r)
             self.assertEquals(d.consumer_info, {'city': 'Testdorp', 'account': '123456789', 'name': 'T. TEST'})
 
-    unittest.main()
+
+    if 'partner_id' in dir():
+        unittest.main()
+    else:
+        print "Skipping unittests. Please specify a partner ID"
