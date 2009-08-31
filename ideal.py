@@ -5,7 +5,7 @@
 #
 # based on ideal.class.php by Mollie BV
 #
-# license: GPLv3
+# license: GPLv2
 #
 # copyright 2009, NFG Net Facilities Group BV, www.nfg.nl
 #
