@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: nfg.ideal
+Version: 0.1dev
+Summary: Python class for iDEAL
+Home-page: http://www.nfg.nl
+Author: NFG Net Facilities Group BV
+Author-email: support@nfg.nl
+License: GPLv3
+Description: a simple python wrapper for the Mollie.nl webservice, a micropayment broker for the iDEAL system
+Keywords: ideal nfg mollie
+Platform: UNKNOWN
