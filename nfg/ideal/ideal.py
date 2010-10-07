@@ -17,7 +17,10 @@ import xml.etree.ElementTree as ET
 class idealPayment:
 
     min_trans_amount = 118
+
     partner_id       = None
+    profile_key      = None
+
     testmode         = False
 
     bank_id          = None
@@ -27,15 +30,24 @@ class idealPayment:
     report_url       = None
 
     bank_url         = None
+    payment_url      = None
+
     transaction_id   = None
     paid_status      = False
     consumer_info    = {}
 
-    def __init__(self, partner_id):
+    api_host         = 'secure.mollie.nl'
+    api_port         = 443
+
+    def __init__(self, partner_id, api_host='secure.mollie.nl', api_port=443):
         self.setPartnerID(partner_id)
+        assert(api_host);
+        assert(api_port);
+        self.api_host = str(api_host);
+        self.api_port = int(api_port);
 
     def getBanks(self):
-        xml = self._sendRequest('www.mollie.nl', '/xml/ideal/', 
+        xml = self._sendRequest(
             urllib.urlencode(dict(
                 a="banklist",
                 testmode=self.getTestmodeString())
@@ -54,9 +66,9 @@ class idealPayment:
         if self.testmode: return "true"
         return "false" 
 
-    def _sendRequest(self, host, path, data):
-        conn = httplib.HTTPConnection(host)
-        conn.request("POST", path, data, {'Content-type':'application/x-www-form-urlencoded'})
+    def _sendRequest(self, data):
+        conn = httplib.HTTPSConnection(self.api_host, self.api_port)
+        conn.request("POST", '/xml/ideal', data, {'Content-type':'application/x-www-form-urlencoded'})
         return conn.getresponse().read()
 
     def createPayment(self, bank_id, amount, description, return_url, report_url):
@@ -86,17 +98,21 @@ class idealPayment:
         self.setDescription(description)
         self.setReturnURL(return_url)
         self.setReportURL(report_url)
-        xml = self._sendRequest('www.mollie.nl',
-            '/xml/ideal/',
-            urllib.urlencode(dict(
-                a='fetch',
-                partnerid=self.getPartnerID(),
-                bank_id=self.getBankID(),
-                amount=self.getAmount(),
-                reporturl=self.getReportURL(),
-                description=self.getDescription(),
-                returnurl=self.getReturnURL(),
-                )))
+        data = dict(
+            a='fetch',
+            partnerid=self.getPartnerID(),
+            bank_id=self.getBankID(),
+            amount=self.getAmount(),
+            reporturl=self.getReportURL(),
+            description=self.getDescription(),
+            returnurl=self.getReturnURL(),
+        )
+        if self.getProfileKey():
+            data['profile_key'] = self.getProfileKey()
+
+        xml = self._sendRequest(
+            urllib.urlencode(data)
+        )
         if not xml: return False
         for b in self._parse_xml(xml).getiterator('order'):
             self.bank_url = b.find('URL').text
@@ -106,8 +122,7 @@ class idealPayment:
 
     def checkPayment(self, transaction_id):
         self.setTransactionID(transaction_id)
-        xml = self._sendRequest('www.mollie.nl',
-            '/xml/ideal/',
+        xml = self._sendRequest(
             urllib.urlencode(dict(
                 a='check',
                 partnerid=self.getPartnerID(),
@@ -134,6 +149,12 @@ class idealPayment:
     
     def getPartnerID(self):
         return self.partner_id
+
+    def setProfileKey(self, key):
+        self.profile_key = key
+
+    def getProfileKey(self):
+        return self.profile_key
 
     def setBankID(self, id):
         assert(type(id) == type(123))

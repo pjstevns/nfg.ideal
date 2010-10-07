@@ -1,9 +1,12 @@
 
 
 import cgi, unittest, urlparse, httplib
-from nfg.ideal.ideal import idealPayment
+from ideal import idealPayment
 
-#partner_id = 99999 ## please use a valid partner ID
+partner_id = 269845 ## please use a valid partner ID
+testsite = 'http://www.subdir.nl'
+returnurl = '%s/ideal/return' % testsite
+reporturl = '%s/ideal/report' % testsite
 
 class TestIdealPayment(unittest.TestCase):
 
@@ -16,7 +19,7 @@ class TestIdealPayment(unittest.TestCase):
         self.assertEqual(b, {'9999': 'TBM Bank'})
 
     def test_createPayment(self):
-        r = self.c.createPayment(9999, 128, 'test payment', 'http://testsite/ideal/return', 'http://testsite/ideal/report')
+        r = self.c.createPayment(9999, 128, 'test payment', returnurl, reporturl)
         self.assert_(r)
         transaction_id = self.c.getTransactionID()
         url = self.c.getBankURL()
@@ -28,7 +31,7 @@ class TestIdealPayment(unittest.TestCase):
 
     def test_checkPayment(self):
         # prepare payment
-        r = self.c.createPayment(9999, 128, 'test payment', 'http://testsite/ideal/return', 'http://testsite/ideal/report')
+        r = self.c.createPayment(9999, 128, 'test payment', returnurl, reporturl)
         self.assert_(r)
         tid = self.c.getTransactionID()
         url = self.c.getBankURL()
@@ -44,6 +47,7 @@ class TestIdealPayment(unittest.TestCase):
         d.testmode = True
         r = d.checkPayment(tid)
         self.assert_(r)
-        self.assertEquals(d.consumer_info, {'city': 'Testdorp', 'account': '123456789', 'name': 'T. TEST'})
+        self.assertEquals(d.consumer_info, {'city': 'Testdorp', 'account': '0123456789', 'name': 'T. TEST'})
 
-
+if __name__ == '__main__':
+    unittest.main()
