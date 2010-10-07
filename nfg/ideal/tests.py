@@ -3,8 +3,8 @@
 import cgi, unittest, urlparse, httplib
 from ideal import idealPayment
 
-partner_id = 269845 ## please use a valid partner ID
-testsite = 'http://www.subdir.nl'
+partner_id = 9999999 ## please use a valid partner ID
+testsite = 'http://mysite.nl'
 returnurl = '%s/ideal/return' % testsite
 reporturl = '%s/ideal/report' % testsite
 
