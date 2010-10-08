@@ -13,6 +13,9 @@
 
 import httplib, urllib, urlparse
 import xml.etree.ElementTree as ET
+import logging
+
+log = logging.getLogger(__name__)
 
 class idealPayment:
 
@@ -130,13 +133,16 @@ class idealPayment:
                 )))
         if not xml: return False
         r = {}
-        for b in self._parse_xml(xml).getiterator('order'):
-            c =  b.find('consumer')
-            self.amount = int(b.find('amount').text)
-            self.payed_status = b.find('payed').text
-            self.consumer_info['name'] = c.find('consumerName').text
-            self.consumer_info['account'] = c.find('consumerAccount').text
-            self.consumer_info['city'] = c.find('consumerCity').text
+        try:
+            for b in self._parse_xml(xml).getiterator('order'):
+                c =  b.find('consumer')
+                self.amount = int(b.find('amount').text)
+                self.payed_status = b.find('payed').text
+                self.consumer_info['name'] = c.find('consumerName').text
+                self.consumer_info['account'] = c.find('consumerAccount').text
+                self.consumer_info['city'] = c.find('consumerCity').text
+        except AttributeError:
+            return False
 
         if self.amount and self.payed_status: return True
         return False
