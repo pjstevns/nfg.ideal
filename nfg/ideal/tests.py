@@ -46,8 +46,12 @@ class TestIdealPayment(unittest.TestCase):
         d = idealPayment(partner_id)
         d.testmode = True
         r = d.checkPayment(tid)
-        self.assert_(r)
+        self.failUnless(r)
         self.assertEquals(d.consumer_info, {'city': 'Testdorp', 'account': '0123456789', 'name': 'T. TEST'})
+
+        # re-check
+        r = d.checkPayment(tid)
+        self.failIf(r)
 
 if __name__ == '__main__':
     unittest.main()
