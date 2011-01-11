@@ -116,11 +116,16 @@ class idealPayment:
         xml = self._sendRequest(
             urllib.urlencode(data)
         )
-        if not xml: return False
+        if not xml: 
+            log.error("createPayment: no xml") 
+            return False
         for b in self._parse_xml(xml).getiterator('order'):
             self.bank_url = b.find('URL').text
             self.transaction_id = b.find('transaction_id').text
         if self.bank_url and self.transaction_id: return True
+        log.error("bank_url [%s] transaction_id [%s]" %(self.bank_url,
+                                                        self.transaction_id))
+        log.error("%s" % xml)
         return False
 
     def checkPayment(self, transaction_id):
@@ -167,7 +172,7 @@ class idealPayment:
         self.bank_id = id
 
     def getBankID(self):
-        return self.bank_id
+        return "%04d" % self.bank_id
 
     def setAmount(self, amount):
         assert(type(amount) == type(123))
